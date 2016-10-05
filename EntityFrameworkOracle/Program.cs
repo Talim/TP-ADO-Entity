@@ -57,39 +57,58 @@ namespace EntityFrameworkOracle
                 var requete = from s in oracleContext.COURS
                               select s;
                 var lesCours = requete.ToList();
-                //string code = "";
-
-                //// si le codecours de l'élément est le même que celui précédent, n'afficher que la date
-                //foreach (var unSeminaire in lesSeminaires)
-                //{
-                //    if (code != unSeminaire.CODECOURS)
-                //    {
-                //        var count = (from s in oracleContext.SEMINAIREs
-                //                     join COUR in oracleContext.COURS on s.CODECOURS equals COUR.CODECOURS
-                //                     where s.CODECOURS == unSeminaire.CODECOURS
-                //                     select s).Count();
-                //        code = unSeminaire.CODECOURS;
-                //        Console.WriteLine(unSeminaire.CODECOURS + " - " + unSeminaire.CODECOURS + " - " + unSeminaire.COUR.LIBELLECOURS);
-                //        Console.WriteLine("\t\t" + unSeminaire.DATEDEBUTSEM);
-                //    }
-                //    else
-                //    {
-                //        Console.WriteLine("\t\t" + unSeminaire.DATEDEBUTSEM);
-                //    }
-
-                //}
 
                 foreach (var unCours in lesCours)
                 {
                     Console.WriteLine(unCours.CODECOURS + " - " + unCours.LIBELLECOURS);
-                    var getDates = from s in oracleContext.SEMINAIREs
-                                   where unCours.CODECOURS == s.CODECOURS
-                                   select s;
-
-                    foreach (var date in getDates.ToList())
+                    foreach (var date in unCours.SEMINAIREs)
                         Console.WriteLine("\t\t" + date.DATEDEBUTSEM);
                 }
 
+                Console.WriteLine("--------------------------------------------------");
+                Console.WriteLine("----     Nombre d'employer par projet v1     -----");
+                Console.WriteLine("--------------------------------------------------");
+
+                var employeProjet = from emp in oracleContext.EMPLOYEs
+                                    group emp by emp.CODEPROJET into groupeEmployes
+                                    select new
+                                    {
+                                        Projet = groupeEmployes.Key,
+                                        Nombre = groupeEmployes.Count()
+                                    };
+                foreach (var ligne in employeProjet.ToList())
+                    Console.WriteLine(ligne.Projet + " - " + ligne.Nombre);
+
+                Console.WriteLine("--------------------------------------------------");
+                Console.WriteLine("----     Nombre d'employer par projet v2     -----");
+                Console.WriteLine("--------------------------------------------------");
+
+                var empProjetNom = from emp in oracleContext.EMPLOYEs
+                                   join PROJET in oracleContext.PROJETs on emp.CODEPROJET equals PROJET.CODEPROJET
+                                   group emp by new { emp.CODEPROJET, PROJET.NOMPROJET } into groupeEmployes
+                                   select new
+                                   {
+                                       Projet = groupeEmployes.Key.CODEPROJET,
+                                       Nom = groupeEmployes.Key.NOMPROJET,
+                                       Nombre = groupeEmployes.Count()
+                                   };
+
+                foreach(var ligne in empProjetNom.ToList())
+                    Console.WriteLine(ligne.Projet + " - " + ligne.Nom + " - " + ligne.Nombre);
+
+                // PARTIE 4
+                Console.WriteLine("--------------------------------------------------");
+                Console.WriteLine("----                  PARTIE 4               -----");
+                Console.WriteLine("--------------------------------------------------");
+                var requeteP4 = from s in oracleContext.COURS
+                              select s;
+                foreach (var unCours in requeteP4.ToList())
+                    Console.WriteLine(unCours);
+                var requeteEmpP4 = from e in oracleContext.EMPLOYEs
+                                   select e;
+                Console.WriteLine("--------------------------------------------------");
+                foreach(var unEmp in requeteEmpP4.ToList())
+                    Console.WriteLine(unEmp);
 
 
                 Console.Read();
